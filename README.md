@@ -1,2 +1,6 @@
 # Title: Mortal Life Quest
- A Game Jam Project 
+# Genre: Life Simulation + Shooter + Roguelite Elements ( Not Sure Yet)
+
+## Core Concept 
+
+TODO
