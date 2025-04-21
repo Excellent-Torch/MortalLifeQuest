@@ -46,6 +46,7 @@ class AMortalLifeQuestCharacter : public ACharacter
 
 public:
 	AMortalLifeQuestCharacter();
+	virtual void Tick(float DeltaTime) override;
 	
 
 protected:

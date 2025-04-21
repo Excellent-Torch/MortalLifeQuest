@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "MortalLifeQuestCharacter.h"
+#include "MortalLifeQuestAnimInstance.h"
 #include "Engine/LocalPlayer.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -20,18 +21,16 @@ AMortalLifeQuestCharacter::AMortalLifeQuestCharacter()
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-		
+
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 
 	// Configure character movement
-	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
+	GetCharacterMovement()->bOrientRotationToMovement = false; // Character moves in the direction of input...	
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f); // ...at this rotation rate
 
-	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
-	// instead of recompiling to adjust them
 	GetCharacterMovement()->JumpZVelocity = 700.f;
 	GetCharacterMovement()->AirControl = 0.35f;
 	GetCharacterMovement()->MaxWalkSpeed = 500.f;
@@ -50,12 +49,54 @@ AMortalLifeQuestCharacter::AMortalLifeQuestCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
-	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
-	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
 
-//////////////////////////////////////////////////////////////////////////
-// Input
+void AMortalLifeQuestCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (!PlayerController) return;
+
+	FVector WorldMouseLocation;
+	FVector WorldMouseDirection;
+
+	if (PlayerController->DeprojectMousePositionToWorld(WorldMouseLocation, WorldMouseDirection))
+	{
+		FVector Start = WorldMouseLocation;
+		FVector End = Start + (WorldMouseDirection * 10000.0f);
+
+		FHitResult HitResult;
+		FCollisionQueryParams Params;
+		Params.AddIgnoredActor(this);
+
+		if (GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, Params))
+		{
+			FVector ImpactPoint = HitResult.ImpactPoint;
+			FVector CharacterLocation = GetActorLocation();
+
+			// Keep character on same plane (ignore Y axis)
+			ImpactPoint.Y = CharacterLocation.Y;
+
+			FVector Direction = (ImpactPoint - CharacterLocation).GetSafeNormal();
+			FRotator TargetRotation = Direction.Rotation();
+
+			// Set only Yaw to avoid flipping pitch/roll
+			SetActorRotation(FRotator(0.0f, TargetRotation.Yaw, 0.0f));
+
+			// Pass to AnimInstance
+			if (USkeletalMeshComponent* SkelMesh = GetMesh())
+			{
+				UMortalLifeQuestAnimInstance* AnimInstance = Cast<UMortalLifeQuestAnimInstance>(SkelMesh->GetAnimInstance());
+				if (AnimInstance)
+				{
+					AnimInstance->AimTargetLocation = ImpactPoint;
+					AnimInstance->CharacterLocation = SkelMesh->GetComponentLocation();
+				}
+			}
+		}
+	}
+}
 
 void AMortalLifeQuestCharacter::NotifyControllerChanged()
 {
@@ -111,7 +152,7 @@ void AMortalLifeQuestCharacter::Move(const FInputActionValue& Value)
 
 		// add movement 
 		AddMovementInput(ForwardDirection, MovementVector.Y);
-		AddMovementInput(RightDirection, MovementVector.X);
+		//AddMovementInput(RightDirection, MovementVector.X);
 	}
 }
 
@@ -123,7 +164,7 @@ void AMortalLifeQuestCharacter::Look(const FInputActionValue& Value)
 	if (Controller != nullptr)
 	{
 		// add yaw and pitch input to controller
-		AddControllerYawInput(LookAxisVector.X);
-		AddControllerPitchInput(LookAxisVector.Y);
+		//AddControllerYawInput(LookAxisVector.X);
+		//AddControllerPitchInput(LookAxisVector.Y);
 	}
 }
