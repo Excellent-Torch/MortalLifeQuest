@@ -28,7 +28,8 @@ AMortalLifeQuestCharacter::AMortalLifeQuestCharacter()
 	bUseControllerRotationRoll = false;
 
 	// Configure character movement
-	GetCharacterMovement()->bOrientRotationToMovement = false; // Character moves in the direction of input...	
+	bUseControllerRotationYaw = false;
+	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f); // ...at this rotation rate
 
 	GetCharacterMovement()->JumpZVelocity = 700.f;
@@ -66,23 +67,23 @@ void AMortalLifeQuestCharacter::Tick(float DeltaTime)
 		FVector Start = WorldMouseLocation;
 		FVector End = Start + (WorldMouseDirection * 10000.0f);
 
-		FHitResult HitResult;
+		GlobalHitResult;
 		FCollisionQueryParams Params;
 		Params.AddIgnoredActor(this);
 
-		if (GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, Params))
+		if (GetWorld()->LineTraceSingleByChannel(GlobalHitResult, Start, End, ECC_Visibility, Params))
 		{
-			FVector ImpactPoint = HitResult.ImpactPoint;
+			ImpactPoint = GlobalHitResult.ImpactPoint;
 			FVector CharacterLocation = GetActorLocation();
 
 			// Keep character on same plane (ignore Y axis)
-			ImpactPoint.Y = CharacterLocation.Y;
+			//ImpactPoint.Y = CharacterLocation.Y;
 
 			FVector Direction = (ImpactPoint - CharacterLocation).GetSafeNormal();
 			FRotator TargetRotation = Direction.Rotation();
 
 			// Set only Yaw to avoid flipping pitch/roll
-			SetActorRotation(FRotator(0.0f, TargetRotation.Yaw, 0.0f));
+			//SetActorRotation(FRotator(0.0f, TargetRotation.Yaw, 0.0f));
 
 			// Pass to AnimInstance
 			if (USkeletalMeshComponent* SkelMesh = GetMesh())

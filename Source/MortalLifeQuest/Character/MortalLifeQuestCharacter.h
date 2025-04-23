@@ -48,7 +48,11 @@ public:
 	AMortalLifeQuestCharacter();
 	virtual void Tick(float DeltaTime) override;
 	
+	UPROPERTY(BlueprintReadWrite)
+	FVector ImpactPoint;
 
+	UPROPERTY(BlueprintReadWrite)
+	FHitResult GlobalHitResult;
 protected:
 
 	/** Called for movement input */
