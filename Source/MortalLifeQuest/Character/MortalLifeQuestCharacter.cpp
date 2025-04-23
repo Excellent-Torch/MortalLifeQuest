@@ -64,14 +64,14 @@ void AMortalLifeQuestCharacter::Tick(float DeltaTime)
 
 	if (PlayerController->DeprojectMousePositionToWorld(WorldMouseLocation, WorldMouseDirection))
 	{
-		FVector Start = WorldMouseLocation;
-		FVector End = Start + (WorldMouseDirection * 10000.0f);
+		MouseStart = WorldMouseLocation;
+		MouseEnd = MouseStart + (WorldMouseDirection * 10000.0f);
 
 		GlobalHitResult;
 		FCollisionQueryParams Params;
 		Params.AddIgnoredActor(this);
 
-		if (GetWorld()->LineTraceSingleByChannel(GlobalHitResult, Start, End, ECC_Visibility, Params))
+		if (GetWorld()->LineTraceSingleByChannel(GlobalHitResult, MouseStart, MouseEnd, ECC_Visibility, Params))
 		{
 			ImpactPoint = GlobalHitResult.ImpactPoint;
 			FVector CharacterLocation = GetActorLocation();
@@ -83,7 +83,7 @@ void AMortalLifeQuestCharacter::Tick(float DeltaTime)
 			FRotator TargetRotation = Direction.Rotation();
 
 			// Set only Yaw to avoid flipping pitch/roll
-			//SetActorRotation(FRotator(0.0f, TargetRotation.Yaw, 0.0f));
+			SetActorRotation(FRotator(0.0f, TargetRotation.Yaw, 0.0f));
 
 			// Pass to AnimInstance
 			if (USkeletalMeshComponent* SkelMesh = GetMesh())

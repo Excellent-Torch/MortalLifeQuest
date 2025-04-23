@@ -49,6 +49,12 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	
 	UPROPERTY(BlueprintReadWrite)
+	FVector MouseStart;
+
+	UPROPERTY(BlueprintReadWrite)
+	FVector MouseEnd;
+
+	UPROPERTY(BlueprintReadWrite)
 	FVector ImpactPoint;
 
 	UPROPERTY(BlueprintReadWrite)
